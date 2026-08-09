@@ -7,7 +7,6 @@ import com.banking.bankingsystem.dto.CreateBeneficiaryRequest;
 import com.banking.bankingsystem.model.Beneficiary;
 import com.banking.bankingsystem.service.BeneficiaryService;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +20,6 @@ public class BeneficiaryController {
 
     private final BeneficiaryService beneficiaryService;
 
-    @Autowired
     public BeneficiaryController(BeneficiaryService beneficiaryService){
         this.beneficiaryService = beneficiaryService;
     }

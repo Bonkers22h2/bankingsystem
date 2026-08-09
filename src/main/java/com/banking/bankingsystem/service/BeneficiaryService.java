@@ -1,6 +1,5 @@
 package com.banking.bankingsystem.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.banking.bankingsystem.dto.CreateBeneficiaryRequest;
@@ -14,7 +13,6 @@ public class BeneficiaryService {
     private final AccountRepository accountRepository;
     private final BeneficiaryRepository beneficiaryRepository;
 
-    @Autowired
     public BeneficiaryService(BeneficiaryRepository beneficiaryRepository, AccountRepository accountRepository) {
         this.beneficiaryRepository = beneficiaryRepository;
         this.accountRepository = accountRepository;

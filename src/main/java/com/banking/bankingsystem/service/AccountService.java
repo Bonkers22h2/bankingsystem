@@ -5,7 +5,6 @@ import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.model.*;
 import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +18,6 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
 
-    @Autowired
     public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
