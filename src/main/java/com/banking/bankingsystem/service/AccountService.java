@@ -7,13 +7,14 @@ import com.banking.bankingsystem.model.*;
 import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-
 
 @Service
 public class AccountService {
@@ -144,5 +145,9 @@ public class AccountService {
             sb.append(random.nextInt(10)); // random digit 0-9
         }
         return sb.toString();
+    }
+
+    public Page<Transaction> getTransactions(Long accountId, Pageable pageable) {
+        return transactionRepository.findByAccountId(accountId, pageable);
     }
 }
