@@ -2,9 +2,11 @@ package com.banking.bankingsystem.service;
 
 import com.banking.bankingsystem.dto.CreateAccountRequest;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
+import com.banking.bankingsystem.exception.InvalidAmountException;
 import com.banking.bankingsystem.model.*;
 import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,11 +14,15 @@ import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
+
 @Service
 public class AccountService {
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
+
+    private static final BigDecimal MIN_WITHDRAWAL = new BigDecimal("100");
+    private static final BigDecimal MAX_WITHDRAWAL = new BigDecimal("50000");
 
     public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
         this.accountRepository = accountRepository;
@@ -28,6 +34,18 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
+        if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
+            throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
+        }
+
+        if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
+            throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
+        }
+
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Insufficient funds in account " + accountId);
+        }
+
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
 
@@ -38,6 +56,14 @@ public class AccountService {
     public void withdraw(Long accountId, BigDecimal amount) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
+            throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
+        }
+
+        if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
+            throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
+        }
 
         if (account.getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException("Insufficient funds in account " + accountId);
@@ -58,6 +84,14 @@ public class AccountService {
 
         if (fromAccount.getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException("Insufficient funds in account " + fromAccountId);
+        }
+
+        if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
+            throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
+        }
+
+        if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
+            throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
         }
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
