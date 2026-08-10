@@ -2,6 +2,7 @@ package com.banking.bankingsystem.controller;
 
 import com.banking.bankingsystem.dto.CreateAccountRequest;
 import com.banking.bankingsystem.dto.DepositRequest;
+import com.banking.bankingsystem.dto.UpdateAccountRequest;
 import com.banking.bankingsystem.model.Account;
 import com.banking.bankingsystem.model.Transaction;
 import com.banking.bankingsystem.service.AccountService;
@@ -10,10 +11,13 @@ import jakarta.validation.Valid;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.apache.catalina.connector.Response;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @RestController
 @RequestMapping("/accounts")
@@ -63,4 +67,21 @@ public class AccountController {
         return ResponseEntity.ok(accountService.getTransactions(id, pageable));
     }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Account> updateAccount(@PathVariable Long id, @Valid @RequestBody UpdateAccountRequest request){
+        Account account = accountService.updateAccount(id, request);
+        return ResponseEntity.ok(account);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> closeAccount(@PathVariable Long id) {
+        accountService.closeAccount(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/activate")
+    public ResponseEntity<Void> activateAccount(@PathVariable Long id) {
+        accountService.activateAccount(id);
+        return ResponseEntity.ok().build();
+    }
 }

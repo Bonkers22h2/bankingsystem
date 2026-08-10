@@ -1,6 +1,7 @@
 package com.banking.bankingsystem.service;
 
 import com.banking.bankingsystem.dto.CreateAccountRequest;
+import com.banking.bankingsystem.dto.UpdateAccountRequest;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.exception.InvalidAmountException;
 import com.banking.bankingsystem.model.*;
@@ -125,6 +126,30 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    public Account updateAccount(Long id, UpdateAccountRequest request){
+        Account account = accountRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Account not found!"));
+
+        account.setOwnerName(request.getOwnerName());
+        return accountRepository.save(account);
+    }
+
+    public void closeAccount(Long id){
+        Account account = accountRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Account not found!"));
+
+        account.setActive(false);
+        accountRepository.save(account);
+    }
+
+    public void activateAccount(Long id) {
+        Account account = accountRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Account not found!"));
+
+        account.setActive(true);
+        accountRepository.save(account);
+    }
+
     public Account getAccount(Long id) {
         return accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
@@ -146,6 +171,8 @@ public class AccountService {
         }
         return sb.toString();
     }
+
+    
 
     public Page<Transaction> getTransactions(Long accountId, Pageable pageable) {
         return transactionRepository.findByAccountId(accountId, pageable);

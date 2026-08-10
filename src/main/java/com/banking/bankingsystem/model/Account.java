@@ -14,7 +14,9 @@ public class Account {
 
     
     private String accountNumber;
+
     private String ownerName;
+
     private BigDecimal balance;
 
     @Enumerated(EnumType.STRING)
@@ -22,9 +24,16 @@ public class Account {
 
     private LocalDateTime createdAt;
 
-    public Account() {
+    private Boolean active;
+
+
+    public Boolean isActive() {
+        return this.active;
     }
 
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return this.id;
