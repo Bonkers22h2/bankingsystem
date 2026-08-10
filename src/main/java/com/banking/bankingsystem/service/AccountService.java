@@ -1,22 +1,26 @@
 package com.banking.bankingsystem.service;
 
-import com.banking.bankingsystem.dto.CreateAccountRequest;
-import com.banking.bankingsystem.dto.UpdateAccountRequest;
-import com.banking.bankingsystem.exception.ClosedAccountException;
-import com.banking.bankingsystem.exception.InsufficientFundsException;
-import com.banking.bankingsystem.exception.InvalidAmountException;
-import com.banking.bankingsystem.model.*;
-import com.banking.bankingsystem.repository.AccountRepository;
-import com.banking.bankingsystem.repository.TransactionRepository;
+import java.math.BigDecimal;
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
+import com.banking.bankingsystem.dto.CreateAccountRequest;
+import com.banking.bankingsystem.dto.UpdateAccountRequest;
+import com.banking.bankingsystem.exception.ClosedAccountException;
+import com.banking.bankingsystem.exception.InsufficientFundsException;
+import com.banking.bankingsystem.exception.InvalidAmountException;
+import com.banking.bankingsystem.model.Account;
+import com.banking.bankingsystem.model.AccountType;
+import com.banking.bankingsystem.model.Transaction;
+import com.banking.bankingsystem.model.TransactionStatus;
+import com.banking.bankingsystem.model.TransactionType;
+import com.banking.bankingsystem.repository.AccountRepository;
+import com.banking.bankingsystem.repository.TransactionRepository;
 
 @Service
 public class AccountService {
@@ -37,7 +41,7 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
-        if (account.isActive().equals(false)) {
+        if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
 
@@ -64,7 +68,7 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
-        if (account.isActive().equals(false)) {
+        if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
 
@@ -93,16 +97,12 @@ public class AccountService {
         Account toAccount = accountRepository.findById(toAccountId)
                 .orElseThrow(() -> new RuntimeException("Destination account not found"));
 
-        if (fromAccount.isActive().equals(false)) {
-            throw new ClosedAccountException("Source account is closed");
+        if (!fromAccount.isActive()) {
+            throw new ClosedAccountException("Source account is close");
         }
 
-        if (toAccount.isActive().equals(false)) {
-            throw new ClosedAccountException("Destination account is closed");
-        }
-
-        if (fromAccount.getBalance().compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Insufficient funds in account " + fromAccountId);
+        if (!toAccount.isActive()) {
+            throw new ClosedAccountException("Destination account is close");
         }
 
         if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
@@ -111,6 +111,10 @@ public class AccountService {
 
         if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
             throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
+        }
+
+        if (fromAccount.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("Insufficient funds in account " + fromAccountId);
         }
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
@@ -170,8 +174,8 @@ public class AccountService {
     public Account getAccount(Long id) {
         Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
-        if (account.isActive().equals(false)) {
-            throw new ClosedAccountException("Account is closed");
+        if (!account.isActive()) {
+            throw new ClosedAccountException("This account is close");
         }
         return account;
     }

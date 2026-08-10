@@ -24,14 +24,14 @@ public class Account {
 
     private LocalDateTime createdAt;
 
-    private Boolean active;
+    private boolean active = true;
 
 
-    public Boolean isActive() {
+    public boolean isActive() {
         return this.active;
     }
 
-    public void setActive(Boolean active) {
+    public void setActive(boolean active) {
         this.active = active;
     }
 
