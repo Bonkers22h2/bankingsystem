@@ -9,10 +9,6 @@ public class DepositRequest {
     @PositiveOrZero
     private BigDecimal amount;
 
-    public DepositRequest() {
-        // TODO Auto-generated method stub
-    }
-
 
     public BigDecimal getAmount() {
         return this.amount;

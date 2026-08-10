@@ -14,9 +14,6 @@ public class CreateAccountRequest {
     private String accountType;
     @PositiveOrZero
     private BigDecimal initialBalance; 
-    public CreateAccountRequest() {
-        // TODO Auto-generated method stub
-    }
 
 
     public String getOwnerName() {

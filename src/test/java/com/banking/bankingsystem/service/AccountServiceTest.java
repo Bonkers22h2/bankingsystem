@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-import java.lang.StackWalker.Option;
 import java.math.BigDecimal;
 import java.util.Optional;
 
@@ -138,6 +137,59 @@ class AccountServiceTest {
 
         assertThrows(ClosedAccountException.class, () -> {
             accountService.transfer(1L, 2L, new BigDecimal("100"));
+        });
+    }
+
+    @Test
+    void deposit_shouldThrowException_whenAccountIsClose(){
+        Account account = new Account();
+        account.setId(1L);
+        account.setBalance(new BigDecimal("1000"));
+        account.setActive(false);
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        assertThrows(ClosedAccountException.class, () -> {
+            accountService.deposit(1L, new BigDecimal("100"));
+        });
+    }
+
+    @Test
+    void deposit_shouldThrowException_whenAmountIsBelowMinimum() {
+        Account account = new Account();
+        account.setId(1L);
+        account.setBalance(new BigDecimal("1000"));
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        assertThrows(InvalidAmountException.class, () -> {
+            accountService.deposit(1L, new BigDecimal("10"));
+        });
+    }
+
+    @Test
+    void deposit_shouldThrowException_whenAmountIsAboveMaximum() {
+        Account account = new Account();
+        account.setId(1L);
+        account.setBalance(new BigDecimal("1000"));
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        assertThrows(InvalidAmountException.class, () -> {
+            accountService.deposit(1L, new BigDecimal("1000000"));
+        });
+    }
+
+    @Test
+    void deposit_shouldThrowException_whenInsufficientBalance() {
+        Account account = new Account();
+        account.setId(1L);
+        account.setBalance(new BigDecimal("100"));
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        assertThrows(InsufficientFundsException.class, () -> {
+            accountService.deposit(1L, new BigDecimal("1000"));
         });
     }
 }

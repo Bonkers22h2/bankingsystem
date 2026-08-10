@@ -55,8 +55,4 @@ public class Beneficiary {
     public void setBeneficiaryAccountNumber(String beneficiaryAccountNumber) {
         this.beneficiaryAccountNumber = beneficiaryAccountNumber;
     }
-
-    public Beneficiary() {
-        // TODO Auto-generated method stub
-    }
 }
