@@ -2,6 +2,7 @@ package com.banking.bankingsystem.service;
 
 import com.banking.bankingsystem.dto.CreateAccountRequest;
 import com.banking.bankingsystem.dto.UpdateAccountRequest;
+import com.banking.bankingsystem.exception.ClosedAccountException;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.exception.InvalidAmountException;
 import com.banking.bankingsystem.model.*;
@@ -36,6 +37,10 @@ public class AccountService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
+        if (account.isActive().equals(false)) {
+            throw new ClosedAccountException("This account is close");
+        }
+
         if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
             throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
         }
@@ -58,6 +63,10 @@ public class AccountService {
     public void withdraw(Long accountId, BigDecimal amount) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
+
+        if (account.isActive().equals(false)) {
+            throw new ClosedAccountException("This account is close");
+        }
 
         if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
             throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
@@ -83,6 +92,14 @@ public class AccountService {
                 .orElseThrow(() -> new RuntimeException("Source account not found"));
         Account toAccount = accountRepository.findById(toAccountId)
                 .orElseThrow(() -> new RuntimeException("Destination account not found"));
+
+        if (fromAccount.isActive().equals(false)) {
+            throw new ClosedAccountException("Source account is closed");
+        }
+
+        if (toAccount.isActive().equals(false)) {
+            throw new ClosedAccountException("Destination account is closed");
+        }
 
         if (fromAccount.getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException("Insufficient funds in account " + fromAccountId);
@@ -126,17 +143,17 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
-    public Account updateAccount(Long id, UpdateAccountRequest request){
+    public Account updateAccount(Long id, UpdateAccountRequest request) {
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Account not found!"));
+                .orElseThrow(() -> new RuntimeException("Account not found!"));
 
         account.setOwnerName(request.getOwnerName());
         return accountRepository.save(account);
     }
 
-    public void closeAccount(Long id){
+    public void closeAccount(Long id) {
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Account not found!"));
+                .orElseThrow(() -> new RuntimeException("Account not found!"));
 
         account.setActive(false);
         accountRepository.save(account);
@@ -144,15 +161,19 @@ public class AccountService {
 
     public void activateAccount(Long id) {
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Account not found!"));
+                .orElseThrow(() -> new RuntimeException("Account not found!"));
 
         account.setActive(true);
         accountRepository.save(account);
     }
 
     public Account getAccount(Long id) {
-        return accountRepository.findById(id)
+        Account account = accountRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
+        if (account.isActive().equals(false)) {
+            throw new ClosedAccountException("Account is closed");
+        }
+        return account;
     }
 
     private String generateUniqueAccountNumber() {
@@ -171,8 +192,6 @@ public class AccountService {
         }
         return sb.toString();
     }
-
-    
 
     public Page<Transaction> getTransactions(Long accountId, Pageable pageable) {
         return transactionRepository.findByAccountId(accountId, pageable);

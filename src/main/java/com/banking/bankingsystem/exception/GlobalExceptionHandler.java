@@ -22,6 +22,11 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ClosedAccountException.class)
+    public ResponseEntity<Map<String, Object>> handleClosedAccount(ClosedAccountException ex) {
+        return buildErrorResponse(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }
+
     private ResponseEntity<Map<String, Object>> buildErrorResponse(String message, HttpStatus status) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
