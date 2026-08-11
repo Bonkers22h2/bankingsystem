@@ -72,8 +72,33 @@ public class SavingsGoalService {
         return savingsGoalRepository.save(savingsGoal);
     }
 
-    public SavingsGoal getSavingsGoal(Long id) {
+    public SavingsGoal getSavingsGoal(Long accountId, Long id) {
+
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new RuntimeException("No Account found"));
+        SavingsGoal savingsGoal = savingsGoalRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Savings Goal not found"));
+
+        if (!account.isActive()) {
+            throw new ClosedAccountException("This account is close");
+        }
+
+        if(!savingsGoal.getAccount().getId().equals(accountId)){
+            throw new RuntimeException("This Savings goal does not belong to the specified account");
+        }
+
         return savingsGoalRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Savings Goal not found!"));
+    }
+
+    public void deleteSavingsGoal(Long accountId, Long id) {
+        SavingsGoal savingsGoal = savingsGoalRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Savings Goal not found"));
+        
+        if(!savingsGoal.getAccount().getId().equals(accountId)){
+            throw new RuntimeException("This Savings Goal does not belong to the specified account");
+        }
+
+        savingsGoalRepository.delete(savingsGoal);
     }
 }

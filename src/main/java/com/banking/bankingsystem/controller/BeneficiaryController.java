@@ -36,8 +36,8 @@ public class BeneficiaryController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Beneficiary> getBeneficiary(@PathVariable Long id) {
-        Beneficiary beneficiary = beneficiaryService.getBeneficiary(id);
+    public ResponseEntity<Beneficiary> getBeneficiary(@PathVariable Long accountId, @PathVariable Long id) {
+        Beneficiary beneficiary = beneficiaryService.getBeneficiary(accountId, id);
         return ResponseEntity.ok(beneficiary);
     }
 

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
@@ -44,9 +45,16 @@ public class SavingsGoalController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SavingsGoal> getSavingsGoal(@PathVariable Long id) {
-        SavingsGoal savingsGoal = savingsGoalService.getSavingsGoal(id);
+    public ResponseEntity<SavingsGoal> getSavingsGoal(@PathVariable Long accountId, @PathVariable Long id) {
+        SavingsGoal savingsGoal = savingsGoalService.getSavingsGoal(accountId, id);
         return ResponseEntity.ok(savingsGoal);
     }
-    
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<SavingsGoal> deleteSavingsGoal(
+            @PathVariable Long accountId,
+            @PathVariable Long id) {
+        savingsGoalService.deleteSavingsGoal(accountId, id);
+        return ResponseEntity.ok().build();
+    }
 }
