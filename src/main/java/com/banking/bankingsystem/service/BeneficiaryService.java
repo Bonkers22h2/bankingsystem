@@ -29,12 +29,10 @@ public class BeneficiaryService {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
 
-        // -----optional at first since this will just be a notebook------
-        // Boolean exists =
-        // accountRepository.existsByAccountNumber(request.getBeneficiaryAccountNumber());
-        // if (!exists) {
-        // throw new RuntimeException("No account found with that account number");
-        // }
+        /* Boolean exists = accountRepository.existsByAccountNumber(request.getBeneficiaryAccountNumber());
+        if (!exists) {
+        throw new RuntimeException("No account found with that account number");
+        } */
 
         
         Beneficiary beneficiary = new Beneficiary();
