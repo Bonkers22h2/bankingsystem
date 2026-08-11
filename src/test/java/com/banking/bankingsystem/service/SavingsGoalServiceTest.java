@@ -18,6 +18,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.banking.bankingsystem.dto.ContributeSavingsGoalRequest;
 import com.banking.bankingsystem.dto.CreateSavingsGoalRequest;
 import com.banking.bankingsystem.exception.ClosedAccountException;
+import com.banking.bankingsystem.exception.GoalLimitExceedException;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.exception.SavingsGoalNotFoundException;
 import com.banking.bankingsystem.model.Account;
@@ -165,7 +166,7 @@ class SavingsGoalServiceTest {
         when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
-        assertThrows(RuntimeException.class, () -> {
+        assertThrows(GoalLimitExceedException.class, () -> {
             savingsGoalService.contribute(1L, 10L, request);
         });
     }

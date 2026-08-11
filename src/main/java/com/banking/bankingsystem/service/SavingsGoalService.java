@@ -8,6 +8,7 @@ import com.banking.bankingsystem.dto.ContributeSavingsGoalRequest;
 import com.banking.bankingsystem.dto.CreateSavingsGoalRequest;
 import com.banking.bankingsystem.exception.AccountNotFoundException;
 import com.banking.bankingsystem.exception.ClosedAccountException;
+import com.banking.bankingsystem.exception.GoalLimitExceedException;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.exception.SavingsGoalNotFoundException;
 import com.banking.bankingsystem.model.Account;
@@ -64,7 +65,7 @@ public class SavingsGoalService {
         BigDecimal newCurrentAmount = savingsGoal.getCurrentAmount().add(request.getAmount());
 
         if (newCurrentAmount.compareTo(savingsGoal.getTargetAmount()) > 0) {
-            throw new RuntimeException("Contribution would exceed the goal's target amount");
+            throw new GoalLimitExceedException("Contribution would exceed the goal's target amount");
         }
 
         account.setBalance(account.getBalance().subtract(request.getAmount()));
