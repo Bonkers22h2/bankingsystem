@@ -21,6 +21,7 @@ import com.banking.bankingsystem.model.TransactionStatus;
 import com.banking.bankingsystem.model.TransactionType;
 import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
+import com.banking.bankingsystem.exception.AccountNotFoundException;
 
 @Service
 public class AccountService {
@@ -39,7 +40,7 @@ public class AccountService {
     @Transactional
     public void deposit(Long accountId, BigDecimal amount) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
@@ -66,7 +67,7 @@ public class AccountService {
     @Transactional
     public void withdraw(Long accountId, BigDecimal amount) {
         Account account = accountRepository.findById(accountId)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
@@ -93,9 +94,9 @@ public class AccountService {
     @Transactional
     public void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount) {
         Account fromAccount = accountRepository.findById(fromAccountId)
-                .orElseThrow(() -> new RuntimeException("Source account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Source account not found"));
         Account toAccount = accountRepository.findById(toAccountId)
-                .orElseThrow(() -> new RuntimeException("Destination account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Destination account not found"));
 
         if (!fromAccount.isActive()) {
             throw new ClosedAccountException("Source account is close");
@@ -149,7 +150,7 @@ public class AccountService {
 
     public Account updateAccount(Long id, UpdateAccountRequest request) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found!"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         account.setOwnerName(request.getOwnerName());
         return accountRepository.save(account);
@@ -157,7 +158,7 @@ public class AccountService {
 
     public void closeAccount(Long id) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found!"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         account.setActive(false);
         accountRepository.save(account);
@@ -165,7 +166,7 @@ public class AccountService {
 
     public void activateAccount(Long id) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found!"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         account.setActive(true);
         accountRepository.save(account);
@@ -173,7 +174,7 @@ public class AccountService {
 
     public Account getAccount(Long id) {
         Account account = accountRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
