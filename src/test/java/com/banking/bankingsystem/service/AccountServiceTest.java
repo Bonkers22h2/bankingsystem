@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.banking.bankingsystem.exception.AccountNotFoundException;
 import com.banking.bankingsystem.exception.ClosedAccountException;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.exception.InvalidAmountException;
@@ -141,7 +142,7 @@ class AccountServiceTest {
     }
 
     @Test
-    void deposit_shouldThrowException_whenAccountIsClose(){
+    void deposit_shouldThrowException_whenAccountIsClose() {
         Account account = new Account();
         account.setId(1L);
         account.setBalance(new BigDecimal("1000"));
@@ -190,6 +191,97 @@ class AccountServiceTest {
 
         assertThrows(InsufficientFundsException.class, () -> {
             accountService.deposit(1L, new BigDecimal("1000"));
+        });
+    }
+
+    @Test
+    void deposit_shouldIncreaseBalance_whenAmountIsValid() {
+        Account account = new Account();
+        account.setId(1L);
+        account.setBalance(new BigDecimal("1000"));
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        accountService.deposit(1L, new BigDecimal("300"));
+
+        assertEquals(new BigDecimal("1300"), account.getBalance());
+    }
+
+    @Test
+    void withdraw_shouldThrowException_whenAccountIsClosed() {
+        Account account = new Account();
+        account.setId(1L);
+        account.setBalance(new BigDecimal("1000"));
+        account.setActive(false);
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+
+        assertThrows(ClosedAccountException.class, () -> {
+            accountService.withdraw(1L, new BigDecimal("300"));
+        });
+    }
+
+    @Test
+    void transfer_shouldThrowException_whenDestinationAccountIsClosed() {
+        Account sourceAccount = new Account();
+        sourceAccount.setId(1L);
+        sourceAccount.setBalance(new BigDecimal("1000"));
+
+        Account destinationAccount = new Account();
+        destinationAccount.setId(2L);
+        destinationAccount.setBalance(new BigDecimal("500"));
+        destinationAccount.setActive(false);
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(sourceAccount));
+        when(accountRepository.findById(2L)).thenReturn(Optional.of(destinationAccount));
+
+        assertThrows(ClosedAccountException.class, () -> {
+            accountService.transfer(1L, 2L, new BigDecimal("300"));
+        });
+    }
+
+    @Test
+    void transfer_shouldThrowException_whenAmountBelowMinimum() {
+        Account sourceAccount = new Account();
+        sourceAccount.setId(1L);
+        sourceAccount.setBalance(new BigDecimal("1000"));
+
+        Account destinationAccount = new Account();
+        destinationAccount.setId(2L);
+        destinationAccount.setBalance(new BigDecimal("500"));
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(sourceAccount));
+        when(accountRepository.findById(2L)).thenReturn(Optional.of(destinationAccount));
+
+        assertThrows(InvalidAmountException.class, () -> {
+            accountService.transfer(1L, 2L, new BigDecimal("10"));
+        });
+    }
+
+    @Test
+    void transfer_shouldThrowException_whenAmountAboveMaximum() {
+        Account sourceAccount = new Account();
+        sourceAccount.setId(1L);
+        sourceAccount.setBalance(new BigDecimal("1000"));
+
+        Account destinationAccount = new Account();
+        destinationAccount.setId(2L);
+        destinationAccount.setBalance(new BigDecimal("500"));
+
+        when(accountRepository.findById(1L)).thenReturn(Optional.of(sourceAccount));
+        when(accountRepository.findById(2L)).thenReturn(Optional.of(destinationAccount));
+
+        assertThrows(InvalidAmountException.class, () -> {
+            accountService.transfer(1L, 2L, new BigDecimal("999999999"));
+        });
+    }
+
+    @Test
+    void withdraw_shouldThrowException_whenAccountNotFound() {
+        when(accountRepository.findById(1L)).thenReturn(Optional.empty());
+
+        assertThrows(AccountNotFoundException.class, () -> {
+            accountService.withdraw(1L, new BigDecimal("300"));
         });
     }
 }

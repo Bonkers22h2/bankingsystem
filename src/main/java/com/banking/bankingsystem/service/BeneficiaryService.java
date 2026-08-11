@@ -38,8 +38,7 @@ public class BeneficiaryService {
             throw new BeneficiaryNotFoundException("This beneficiary does not belong to the specified account");
         }
 
-        return beneficiaryRepository.findById(id)
-                .orElseThrow(() -> new BeneficiaryNotFoundException("Beneficiary not found"));
+        return beneficiary;
     }
 
     public Beneficiary createBeneficiary(Long accountId, CreateBeneficiaryRequest request) {
