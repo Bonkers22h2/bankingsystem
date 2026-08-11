@@ -54,4 +54,15 @@ public class BeneficiaryService {
         beneficiary.setBeneficiaryAccountNumber(request.getBeneficiaryAccountNumber());
         return beneficiaryRepository.save(beneficiary);
     }
+
+    public void deleteBeneficiary(Long accountId, Long beneficiaryId) {
+        Beneficiary beneficiary = beneficiaryRepository.findById(beneficiaryId)
+            .orElseThrow(() -> new RuntimeException( "Beneficiary not found"));
+
+        if (!beneficiary.getAccount().getId().equals(accountId)) {
+            throw new RuntimeException("This beneficiary does not belong to the specified account");
+        }
+
+        beneficiaryRepository.delete(beneficiary);
+    }
 }
