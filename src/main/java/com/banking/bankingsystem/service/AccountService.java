@@ -3,6 +3,7 @@ package com.banking.bankingsystem.service;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -181,6 +182,10 @@ public class AccountService {
         return account;
     }
 
+    public List<Account> getAllAccounts() {
+        return accountRepository.findAll();
+    }
+
     private String generateUniqueAccountNumber() {
         String accountNumber;
         do {
@@ -201,4 +206,5 @@ public class AccountService {
     public Page<Transaction> getTransactions(Long accountId, Pageable pageable) {
         return transactionRepository.findByAccountId(accountId, pageable);
     }
+
 }
