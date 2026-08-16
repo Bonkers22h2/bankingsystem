@@ -43,8 +43,11 @@ public class BeneficiaryService {
         return beneficiary;
     }
 
-    public List<Beneficiary> getAllBeneficiary(){
-        return beneficiaryRepository.findAll();
+    public List<Beneficiary> getAllBeneficiary(Long accountId){
+        accountRepository.findById(accountId)
+            .orElseThrow(() -> new AccountNotFoundException("Account Not Found!"));
+
+        return beneficiaryRepository.findByAccountId(accountId);
     }
     public Beneficiary createBeneficiary(Long accountId, CreateBeneficiaryRequest request) {
         Account account = accountRepository.findById(accountId)

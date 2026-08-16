@@ -23,10 +23,13 @@ import com.banking.bankingsystem.dto.UpdateAccountRequest;
 import com.banking.bankingsystem.model.Account;
 import com.banking.bankingsystem.model.Transaction;
 import com.banking.bankingsystem.service.AccountService;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200", methods = {
+        RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.DELETE
+})
 @RestController
 @RequestMapping("/accounts")
 public class AccountController {
@@ -88,7 +91,7 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}/close")
     public ResponseEntity<Void> closeAccount(@PathVariable Long id) {
         accountService.closeAccount(id);
         return ResponseEntity.ok().build();
