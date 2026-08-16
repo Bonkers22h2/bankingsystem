@@ -1,5 +1,7 @@
 package com.banking.bankingsystem.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.banking.bankingsystem.dto.CreateBeneficiaryRequest;
@@ -41,6 +43,9 @@ public class BeneficiaryService {
         return beneficiary;
     }
 
+    public List<Beneficiary> getAllBeneficiary(){
+        return beneficiaryRepository.findAll();
+    }
     public Beneficiary createBeneficiary(Long accountId, CreateBeneficiaryRequest request) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));

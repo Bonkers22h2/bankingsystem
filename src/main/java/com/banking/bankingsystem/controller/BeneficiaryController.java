@@ -8,6 +8,8 @@ import com.banking.bankingsystem.dto.UpdateBeneficiaryRequest;
 import com.banking.bankingsystem.model.Beneficiary;
 import com.banking.bankingsystem.service.BeneficiaryService;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,6 +27,12 @@ public class BeneficiaryController {
 
     public BeneficiaryController(BeneficiaryService beneficiaryService) {
         this.beneficiaryService = beneficiaryService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Beneficiary>> getAllBeneficiary() {
+        List<Beneficiary> beneficiaries = beneficiaryService.getAllBeneficiary();
+        return ResponseEntity.ok(beneficiaries);
     }
 
     @PostMapping
