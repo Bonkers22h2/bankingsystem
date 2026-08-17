@@ -42,16 +42,17 @@ class SavingsGoalServiceTest {
     void createSavingsGoal_shouldSaveWithZeroCurrentAmount() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
         CreateSavingsGoalRequest request = new CreateSavingsGoalRequest();
         request.setGoalName("RTX 5090");
         request.setTargetAmount(new BigDecimal("50000"));
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.save(any(SavingsGoal.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        SavingsGoal result = savingsGoalService.createSavingsGoal(1L, request);
+        SavingsGoal result = savingsGoalService.createSavingsGoal("1111111111", request);
 
         assertEquals(new BigDecimal("0"), result.getCurrentAmount());
         assertEquals(account, result.getAccount());
@@ -61,6 +62,7 @@ class SavingsGoalServiceTest {
     void contribute_shouldIncreaseCurrentAmount_andReduceBalance() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
         account.setBalance(new BigDecimal("1000"));
 
         SavingsGoal goal = new SavingsGoal();
@@ -72,10 +74,10 @@ class SavingsGoalServiceTest {
         ContributeSavingsGoalRequest request = new ContributeSavingsGoalRequest();
         request.setAmount(new BigDecimal("200"));
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
-        savingsGoalService.contribute(1L, 10L, request);
+        savingsGoalService.contribute("1111111111", 10L, request);
 
         assertEquals(new BigDecimal("800"), account.getBalance());
         assertEquals(new BigDecimal("300"), goal.getCurrentAmount());
@@ -85,6 +87,7 @@ class SavingsGoalServiceTest {
     void contribute_shouldThrowException_whenAccountIsClosed() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
         account.setActive(false);
 
         SavingsGoal goal = new SavingsGoal();
@@ -94,11 +97,11 @@ class SavingsGoalServiceTest {
         ContributeSavingsGoalRequest request = new ContributeSavingsGoalRequest();
         request.setAmount(new BigDecimal("100"));
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
         assertThrows(ClosedAccountException.class, () -> {
-            savingsGoalService.contribute(1L, 10L, request);
+            savingsGoalService.contribute("1111111111", 10L, request);
         });
     }
 
@@ -106,9 +109,11 @@ class SavingsGoalServiceTest {
     void contribute_shouldThrowException_whenOwnershipMismatch() {
         Account ownerAccount = new Account();
         ownerAccount.setId(1L);
+        ownerAccount.setAccountNumber("1111111111");
 
         Account requestingAccount = new Account();
         requestingAccount.setId(2L);
+        requestingAccount.setAccountNumber("2222222222");
 
         SavingsGoal goal = new SavingsGoal();
         goal.setId(10L);
@@ -117,11 +122,11 @@ class SavingsGoalServiceTest {
         ContributeSavingsGoalRequest request = new ContributeSavingsGoalRequest();
         request.setAmount(new BigDecimal("100"));
 
-        when(accountRepository.findById(2L)).thenReturn(Optional.of(requestingAccount));
+        when(accountRepository.findByAccountNumber("2222222222")).thenReturn(Optional.of(requestingAccount));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
         assertThrows(SavingsGoalNotFoundException.class, () -> {
-            savingsGoalService.contribute(2L, 10L, request); // account 2 asking for account 1's goal
+            savingsGoalService.contribute("2222222222", 10L, request); // account 2 asking for account 1's goal
         });
     }
 
@@ -129,6 +134,7 @@ class SavingsGoalServiceTest {
     void contribute_shouldThrowException_whenInsufficientFunds() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
         account.setBalance(new BigDecimal("50"));
 
         SavingsGoal goal = new SavingsGoal();
@@ -140,11 +146,11 @@ class SavingsGoalServiceTest {
         ContributeSavingsGoalRequest request = new ContributeSavingsGoalRequest();
         request.setAmount(new BigDecimal("200"));
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
         assertThrows(InsufficientFundsException.class, () -> {
-            savingsGoalService.contribute(1L, 10L, request);
+            savingsGoalService.contribute("1111111111", 10L, request);
         });
     }
 
@@ -152,6 +158,7 @@ class SavingsGoalServiceTest {
     void contribute_shouldThrowException_whenContributionExceedsTarget() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
         account.setBalance(new BigDecimal("10000"));
 
         SavingsGoal goal = new SavingsGoal();
@@ -163,11 +170,11 @@ class SavingsGoalServiceTest {
         ContributeSavingsGoalRequest request = new ContributeSavingsGoalRequest();
         request.setAmount(new BigDecimal("200")); // 400 + 200 = 600, exceeds 500 target
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
         assertThrows(GoalLimitExceedException.class, () -> {
-            savingsGoalService.contribute(1L, 10L, request);
+            savingsGoalService.contribute("1111111111", 10L, request);
         });
     }
 
@@ -175,15 +182,16 @@ class SavingsGoalServiceTest {
     void getSavingsGoal_shouldReturnGoal_whenOwnershipIsValid() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
         SavingsGoal goal = new SavingsGoal();
         goal.setId(10L);
         goal.setAccount(account);
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
-        SavingsGoal result = savingsGoalService.getSavingsGoal(1L, 10L);
+        SavingsGoal result = savingsGoalService.getSavingsGoal("1111111111", 10L);
 
         assertEquals(10L, result.getId());
     }
@@ -192,14 +200,16 @@ class SavingsGoalServiceTest {
     void deleteSavingsGoal_shouldSucceed_whenOwnershipIsValid() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
         SavingsGoal goal = new SavingsGoal();
         goal.setId(10L);
         goal.setAccount(account);
 
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(savingsGoalRepository.findById(10L)).thenReturn(Optional.of(goal));
 
-        savingsGoalService.deleteSavingsGoal(1L, 10L);
+        savingsGoalService.deleteSavingsGoal("1111111111", 10L);
 
         verify(savingsGoalRepository).delete(goal);
     }

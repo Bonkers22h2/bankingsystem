@@ -25,32 +25,33 @@ public class BeneficiaryService {
         this.accountRepository = accountRepository;
     }
 
-    public Beneficiary getBeneficiary(Long accountId, Long id) {
-        Account account = accountRepository.findById(accountId)
+    public Beneficiary getBeneficiary(String accountNumber, Long id) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
             .orElseThrow(() -> new AccountNotFoundException("No account found"));
 
         Beneficiary beneficiary = beneficiaryRepository.findById(id)
-            .orElseThrow(() -> new AccountNotFoundException("No beneficiary found"));
+            .orElseThrow(() -> new BeneficiaryNotFoundException("No beneficiary found"));
 
-        if(!account.isActive()){
+        if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
 
-        if(!beneficiary.getAccount().getId().equals(accountId)){
+        if (!beneficiary.getAccount().getId().equals(account.getId())) {
             throw new BeneficiaryNotFoundException("This beneficiary does not belong to the specified account");
         }
 
         return beneficiary;
     }
 
-    public List<Beneficiary> getAllBeneficiary(Long accountId){
-        accountRepository.findById(accountId)
+    public List<Beneficiary> getAllBeneficiary(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
             .orElseThrow(() -> new AccountNotFoundException("Account Not Found!"));
 
-        return beneficiaryRepository.findByAccountId(accountId);
+        return beneficiaryRepository.findByAccountId(account.getId());
     }
-    public Beneficiary createBeneficiary(Long accountId, CreateBeneficiaryRequest request) {
-        Account account = accountRepository.findById(accountId)
+
+    public Beneficiary createBeneficiary(String accountNumber, CreateBeneficiaryRequest request) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
         Beneficiary beneficiary = new Beneficiary();
         beneficiary.setNickname(request.getNickname());
@@ -59,11 +60,14 @@ public class BeneficiaryService {
         return beneficiaryRepository.save(beneficiary);
     }
 
-    public Beneficiary updateBeneficiary(Long accountId, Long beneficiaryId, UpdateBeneficiaryRequest request) {
+    public Beneficiary updateBeneficiary(String accountNumber, Long beneficiaryId, UpdateBeneficiaryRequest request) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
+
         Beneficiary beneficiary = beneficiaryRepository.findById(beneficiaryId)
                 .orElseThrow(() -> new BeneficiaryNotFoundException("Beneficiary not found"));
 
-        if (!beneficiary.getAccount().getId().equals(accountId)) {
+        if (!beneficiary.getAccount().getId().equals(account.getId())) {
             throw new BeneficiaryNotFoundException("This beneficiary does not belong to the specified account");
         }
 
@@ -72,11 +76,14 @@ public class BeneficiaryService {
         return beneficiaryRepository.save(beneficiary);
     }
 
-    public void deleteBeneficiary(Long accountId, Long beneficiaryId) {
-        Beneficiary beneficiary = beneficiaryRepository.findById(beneficiaryId)
-            .orElseThrow(() -> new BeneficiaryNotFoundException( "Beneficiary not found"));
+    public void deleteBeneficiary(String accountNumber, Long beneficiaryId) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
-        if (!beneficiary.getAccount().getId().equals(accountId)) {
+        Beneficiary beneficiary = beneficiaryRepository.findById(beneficiaryId)
+            .orElseThrow(() -> new BeneficiaryNotFoundException("Beneficiary not found"));
+
+        if (!beneficiary.getAccount().getId().equals(account.getId())) {
             throw new BeneficiaryNotFoundException("This beneficiary does not belong to the specified account");
         }
 

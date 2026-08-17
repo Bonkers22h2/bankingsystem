@@ -39,25 +39,26 @@ class BeneficiaryServiceTest {
     void getBeneficiary_shouldReturnBeneficiary_whenOwnershipIsValid() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
         Beneficiary beneficiary = new Beneficiary();
         beneficiary.setId(10L);
         beneficiary.setAccount(account);
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(beneficiaryRepository.findById(10L)).thenReturn(Optional.of(beneficiary));
 
-        Beneficiary result = beneficiaryService.getBeneficiary(1L, 10L);
+        Beneficiary result = beneficiaryService.getBeneficiary("1111111111", 10L);
 
         assertEquals(10L, result.getId());
     }
 
     @Test
     void getBeneficiary_shouldThrowException_whenAccountNotFound() {
-        when(accountRepository.findById(1L)).thenReturn(Optional.empty());
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.empty());
 
         assertThrows(AccountNotFoundException.class, () -> {
-            beneficiaryService.getBeneficiary(1L, 10L);
+            beneficiaryService.getBeneficiary("1111111111", 10L);
         });
     }
 
@@ -65,12 +66,13 @@ class BeneficiaryServiceTest {
     void getBeneficiary_shouldThrowException_whenBeneficiaryNotFound() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(beneficiaryRepository.findById(10L)).thenReturn(Optional.empty());
 
-        assertThrows(AccountNotFoundException.class, () -> {
-            beneficiaryService.getBeneficiary(1L, 10L);
+        assertThrows(BeneficiaryNotFoundException.class, () -> {
+            beneficiaryService.getBeneficiary("1111111111", 10L);
         });
     }
 
@@ -78,17 +80,18 @@ class BeneficiaryServiceTest {
     void getBeneficiary_shouldThrowException_whenAccountIsClosed() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
         account.setActive(false);
 
         Beneficiary beneficiary = new Beneficiary();
         beneficiary.setId(10L);
         beneficiary.setAccount(account);
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(beneficiaryRepository.findById(10L)).thenReturn(Optional.of(beneficiary));
 
         assertThrows(ClosedAccountException.class, () -> {
-            beneficiaryService.getBeneficiary(1L, 10L);
+            beneficiaryService.getBeneficiary("1111111111", 10L);
         });
     }
 
@@ -96,19 +99,21 @@ class BeneficiaryServiceTest {
     void getBeneficiary_shouldThrowException_whenOwnershipMismatch() {
         Account ownerAccount = new Account();
         ownerAccount.setId(1L);
+        ownerAccount.setAccountNumber("1111111111");
 
         Account requestingAccount = new Account();
         requestingAccount.setId(2L);
+        requestingAccount.setAccountNumber("2222222222");
 
         Beneficiary beneficiary = new Beneficiary();
         beneficiary.setId(10L);
         beneficiary.setAccount(ownerAccount); // belongs to account 1
 
-        when(accountRepository.findById(2L)).thenReturn(Optional.of(requestingAccount));
+        when(accountRepository.findByAccountNumber("2222222222")).thenReturn(Optional.of(requestingAccount));
         when(beneficiaryRepository.findById(10L)).thenReturn(Optional.of(beneficiary));
 
         assertThrows(BeneficiaryNotFoundException.class, () -> {
-            beneficiaryService.getBeneficiary(2L, 10L); // account 2 asking for account 1's beneficiary
+            beneficiaryService.getBeneficiary("2222222222", 10L); // account 2 asking for account 1's beneficiary
         });
     }
 
@@ -116,16 +121,17 @@ class BeneficiaryServiceTest {
     void createBeneficiary_shouldSaveWithCorrectAccount() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
         CreateBeneficiaryRequest request = new CreateBeneficiaryRequest();
         request.setNickname("Mom");
         request.setBeneficiaryAccountNumber("1002");
 
-        when(accountRepository.findById(1L)).thenReturn(Optional.of(account));
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(beneficiaryRepository.save(org.mockito.ArgumentMatchers.any(Beneficiary.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Beneficiary result = beneficiaryService.createBeneficiary(1L, request);
+        Beneficiary result = beneficiaryService.createBeneficiary("1111111111", request);
 
         assertEquals("Mom", result.getNickname());
         assertEquals(account, result.getAccount());
@@ -135,6 +141,11 @@ class BeneficiaryServiceTest {
     void updateBeneficiary_shouldThrowException_whenOwnershipMismatch() {
         Account ownerAccount = new Account();
         ownerAccount.setId(1L);
+        ownerAccount.setAccountNumber("1111111111");
+
+        Account requestingAccount = new Account();
+        requestingAccount.setId(2L);
+        requestingAccount.setAccountNumber("2222222222");
 
         Beneficiary beneficiary = new Beneficiary();
         beneficiary.setId(10L);
@@ -144,10 +155,11 @@ class BeneficiaryServiceTest {
         request.setNickname("New Name");
         request.setBeneficiaryAccountNumber("9999");
 
+        when(accountRepository.findByAccountNumber("2222222222")).thenReturn(Optional.of(requestingAccount));
         when(beneficiaryRepository.findById(10L)).thenReturn(Optional.of(beneficiary));
 
         assertThrows(BeneficiaryNotFoundException.class, () -> {
-            beneficiaryService.updateBeneficiary(2L, 10L, request); // wrong accountId
+            beneficiaryService.updateBeneficiary("2222222222", 10L, request); // wrong account
         });
     }
 
@@ -155,14 +167,16 @@ class BeneficiaryServiceTest {
     void deleteBeneficiary_shouldSucceed_whenOwnershipIsValid() {
         Account account = new Account();
         account.setId(1L);
+        account.setAccountNumber("1111111111");
 
         Beneficiary beneficiary = new Beneficiary();
         beneficiary.setId(10L);
         beneficiary.setAccount(account);
 
+        when(accountRepository.findByAccountNumber("1111111111")).thenReturn(Optional.of(account));
         when(beneficiaryRepository.findById(10L)).thenReturn(Optional.of(beneficiary));
 
-        beneficiaryService.deleteBeneficiary(1L, 10L);
+        beneficiaryService.deleteBeneficiary("1111111111", 10L);
 
         verify(beneficiaryRepository).delete(beneficiary);
     }

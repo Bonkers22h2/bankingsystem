@@ -52,54 +52,54 @@ public class AccountController {
         return ResponseEntity.ok(account);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<Account> getAccount(@PathVariable Long id) {
-        Account account = accountService.getAccount(id);
+    @GetMapping("/{accountNumber}")
+    public ResponseEntity<Account> getAccount(@PathVariable String accountNumber) {
+        Account account = accountService.getAccount(accountNumber);
         return ResponseEntity.ok(account);
     }
 
-    @PostMapping("/{id}/withdraw")
-    public ResponseEntity<Void> withdraw(@PathVariable Long id, @Valid @RequestBody DepositRequest request) {
-        accountService.withdraw(id, request.getAmount());
+    @PostMapping("/{accountNumber}/withdraw")
+    public ResponseEntity<Void> withdraw(@PathVariable String accountNumber, @Valid @RequestBody DepositRequest request) {
+        accountService.withdraw(accountNumber, request.getAmount());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{id}/deposit")
-    public ResponseEntity<Void> deposit(@PathVariable Long id, @Valid @RequestBody DepositRequest request) {
-        accountService.deposit(id, request.getAmount());
+    @PostMapping("/{accountNumber}/deposit")
+    public ResponseEntity<Void> deposit(@PathVariable String accountNumber, @Valid @RequestBody DepositRequest request) {
+        accountService.deposit(accountNumber, request.getAmount());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/{fromAccountId}/transfer/{toAccountId}")
-    public ResponseEntity<Void> transfer(@PathVariable Long fromAccountId, @PathVariable Long toAccountId,
+    @PostMapping("/{fromAccountNumber}/transfer/{toAccountNumber}")
+    public ResponseEntity<Void> transfer(@PathVariable String fromAccountNumber, @PathVariable String toAccountNumber,
             @Valid @RequestBody DepositRequest request) {
-        accountService.transfer(fromAccountId, toAccountId, request.getAmount());
+        accountService.transfer(fromAccountNumber, toAccountNumber, request.getAmount());
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/{id}/transactions")
+    @GetMapping("/{accountNumber}/transactions")
     public ResponseEntity<Page<Transaction>> getTransactions(
-            @PathVariable Long id,
+            @PathVariable String accountNumber,
             @PageableDefault(size = 20, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ResponseEntity.ok(accountService.getTransactions(id, pageable));
+        return ResponseEntity.ok(accountService.getTransactions(accountNumber, pageable));
     }
 
-    @PatchMapping("/{id}")
-    public ResponseEntity<Account> updateAccount(@PathVariable Long id,
+    @PatchMapping("/{accountNumber}")
+    public ResponseEntity<Account> updateAccount(@PathVariable String accountNumber,
             @Valid @RequestBody UpdateAccountRequest request) {
-        Account account = accountService.updateAccount(id, request);
+        Account account = accountService.updateAccount(accountNumber, request);
         return ResponseEntity.ok(account);
     }
 
-    @DeleteMapping("/{id}/close")
-    public ResponseEntity<Void> closeAccount(@PathVariable Long id) {
-        accountService.closeAccount(id);
+    @DeleteMapping("/{accountNumber}/close")
+    public ResponseEntity<Void> closeAccount(@PathVariable String accountNumber) {
+        accountService.closeAccount(accountNumber);
         return ResponseEntity.ok().build();
     }
 
-    @PatchMapping("/{id}/activate")
-    public ResponseEntity<Void> activateAccount(@PathVariable Long id) {
-        accountService.activateAccount(id);
+    @PatchMapping("/{accountNumber}/activate")
+    public ResponseEntity<Void> activateAccount(@PathVariable String accountNumber) {
+        accountService.activateAccount(accountNumber);
         return ResponseEntity.ok().build();
     }
 }

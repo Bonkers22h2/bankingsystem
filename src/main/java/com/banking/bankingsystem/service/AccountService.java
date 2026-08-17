@@ -39,24 +39,21 @@ public class AccountService {
     }
 
     @Transactional
-    public void deposit(Long accountId, BigDecimal amount) {
-        Account account = accountRepository.findById(accountId)
+    public void deposit(String accountNumber, BigDecimal amount) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
-
         if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
             throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
         }
-
         if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
             throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
         }
-
         if (account.getBalance().compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Insufficient funds in account " + accountId);
+            throw new InsufficientFundsException("Insufficient funds in account " + accountNumber);
         }
 
         account.setBalance(account.getBalance().add(amount));
@@ -66,24 +63,21 @@ public class AccountService {
     }
 
     @Transactional
-    public void withdraw(Long accountId, BigDecimal amount) {
-        Account account = accountRepository.findById(accountId)
+    public void withdraw(String accountNumber, BigDecimal amount) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
 
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
-
         if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
             throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
         }
-
         if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
             throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
         }
-
         if (account.getBalance().compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Insufficient funds in account " + accountId);
+            throw new InsufficientFundsException("Insufficient funds in account " + accountNumber);
         }
 
         account.setBalance(account.getBalance().subtract(amount));
@@ -93,30 +87,26 @@ public class AccountService {
     }
 
     @Transactional
-    public void transfer(Long fromAccountId, Long toAccountId, BigDecimal amount) {
-        Account fromAccount = accountRepository.findById(fromAccountId)
+    public void transfer(String fromAccountNumber, String toAccountNumber, BigDecimal amount) {
+        Account fromAccount = accountRepository.findByAccountNumber(fromAccountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Source account not found"));
-        Account toAccount = accountRepository.findById(toAccountId)
+        Account toAccount = accountRepository.findByAccountNumber(toAccountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Destination account not found"));
 
         if (!fromAccount.isActive()) {
             throw new ClosedAccountException("Source account is close");
         }
-
         if (!toAccount.isActive()) {
             throw new ClosedAccountException("Destination account is close");
         }
-
         if (amount.compareTo(MIN_WITHDRAWAL) < 0) {
-            throw new InvalidAmountException("Withdrawal amount is below the minimum of " + MIN_WITHDRAWAL);
+            throw new InvalidAmountException("Transfer amount is below the minimum of " + MIN_WITHDRAWAL);
         }
-
         if (amount.compareTo(MAX_WITHDRAWAL) > 0) {
-            throw new InvalidAmountException("Withdrawal amount is above the maximum of " + MAX_WITHDRAWAL);
+            throw new InvalidAmountException("Transfer amount is above the maximum of " + MAX_WITHDRAWAL);
         }
-
         if (fromAccount.getBalance().compareTo(amount) < 0) {
-            throw new InsufficientFundsException("Insufficient funds in account " + fromAccountId);
+            throw new InsufficientFundsException("Insufficient funds in account " + fromAccountNumber);
         }
 
         fromAccount.setBalance(fromAccount.getBalance().subtract(amount));
@@ -145,36 +135,36 @@ public class AccountService {
         account.setAccountType(AccountType.valueOf(request.getAccountType()));
         account.setBalance(request.getInitialBalance());
         account.setCreatedAt(LocalDateTime.now());
-        account.setAccountNumber(generateUniqueAccountNumber()); // NEW
+        account.setAccountNumber(generateUniqueAccountNumber());
         return accountRepository.save(account);
     }
 
-    public Account updateAccount(Long id, UpdateAccountRequest request) {
-        Account account = accountRepository.findById(id)
+    public Account updateAccount(String accountNumber, UpdateAccountRequest request) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         account.setOwnerName(request.getOwnerName());
         return accountRepository.save(account);
     }
 
-    public void closeAccount(Long id) {
-        Account account = accountRepository.findById(id)
+    public void closeAccount(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         account.setActive(false);
         accountRepository.save(account);
     }
 
-    public void activateAccount(Long id) {
-        Account account = accountRepository.findById(id)
+    public void activateAccount(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         account.setActive(true);
         accountRepository.save(account);
     }
 
-    public Account getAccount(Long id) {
-        Account account = accountRepository.findById(id)
+    public Account getAccount(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
@@ -198,13 +188,14 @@ public class AccountService {
         SecureRandom random = new SecureRandom();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 10; i++) {
-            sb.append(random.nextInt(10)); // random digit 0-9
+            sb.append(random.nextInt(10));
         }
         return sb.toString();
     }
 
-    public Page<Transaction> getTransactions(Long accountId, Pageable pageable) {
-        return transactionRepository.findByAccountId(accountId, pageable);
+    public Page<Transaction> getTransactions(String accountNumber, Pageable pageable) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not found"));
+        return transactionRepository.findByAccountId(account.getId(), pageable);
     }
-
 }

@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
         RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.DELETE
 })
 @RestController
-@RequestMapping("/accounts/{accountId}/beneficiaries")
+@RequestMapping("/accounts/{accountNumber}/beneficiaries")
 public class BeneficiaryController {
 
     private final BeneficiaryService beneficiaryService;
@@ -35,39 +35,39 @@ public class BeneficiaryController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Beneficiary>> getAllBeneficiary(@PathVariable Long accountId) {
-        List<Beneficiary> beneficiaries = beneficiaryService.getAllBeneficiary(accountId);
+    public ResponseEntity<List<Beneficiary>> getAllBeneficiary(@PathVariable String accountNumber) {
+        List<Beneficiary> beneficiaries = beneficiaryService.getAllBeneficiary(accountNumber);
         return ResponseEntity.ok(beneficiaries);
     }
 
     @PostMapping
     public ResponseEntity<Beneficiary> createBeneficiary(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @Valid @RequestBody CreateBeneficiaryRequest request) {
-        Beneficiary beneficiary = beneficiaryService.createBeneficiary(accountId, request);
+        Beneficiary beneficiary = beneficiaryService.createBeneficiary(accountNumber, request);
         return ResponseEntity.ok(beneficiary);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Beneficiary> getBeneficiary(@PathVariable Long accountId, @PathVariable Long id) {
-        Beneficiary beneficiary = beneficiaryService.getBeneficiary(accountId, id);
+    public ResponseEntity<Beneficiary> getBeneficiary(@PathVariable String accountNumber, @PathVariable Long id) {
+        Beneficiary beneficiary = beneficiaryService.getBeneficiary(accountNumber, id);
         return ResponseEntity.ok(beneficiary);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<Beneficiary> updateBeneficiary(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @PathVariable Long id,
             @Valid @RequestBody UpdateBeneficiaryRequest request) {
-        Beneficiary beneficiary = beneficiaryService.updateBeneficiary(accountId, id, request);
+        Beneficiary beneficiary = beneficiaryService.updateBeneficiary(accountNumber, id, request);
         return ResponseEntity.ok(beneficiary);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Beneficiary> deleteBeneficiary(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @PathVariable Long id) {
-        beneficiaryService.deleteBeneficiary(accountId, id);
+        beneficiaryService.deleteBeneficiary(accountNumber, id);
         return ResponseEntity.ok().build();
     }
 }

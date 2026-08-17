@@ -1,6 +1,8 @@
 package com.banking.bankingsystem.controller;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.banking.bankingsystem.dto.ContributeSavingsGoalRequest;
@@ -17,8 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@CrossOrigin(origins = "http://localhost:4200", methods = {
+        RequestMethod.GET, RequestMethod.POST, RequestMethod.PATCH, RequestMethod.DELETE
+})
 @RestController
-@RequestMapping("/accounts/{accountId}/savingsGoal")
+@RequestMapping("/accounts/{accountNumber}/savingsGoal")
 public class SavingsGoalController {
 
     private final SavingsGoalService savingsGoalService;
@@ -29,32 +34,32 @@ public class SavingsGoalController {
 
     @PostMapping
     public ResponseEntity<SavingsGoal> createSavingsGoal(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @Valid @RequestBody CreateSavingsGoalRequest request) {
-        SavingsGoal savingsGoal = savingsGoalService.createSavingsGoal(accountId, request);
+        SavingsGoal savingsGoal = savingsGoalService.createSavingsGoal(accountNumber, request);
         return ResponseEntity.ok(savingsGoal);
     }
 
     @PostMapping("/{id}")
     public ResponseEntity<SavingsGoal> contributeSavingsGoal(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @PathVariable Long id,
             @Valid @RequestBody ContributeSavingsGoalRequest request) {
-        SavingsGoal savingsGoal = savingsGoalService.contribute(accountId, id, request);
+        SavingsGoal savingsGoal = savingsGoalService.contribute(accountNumber, id, request);
         return ResponseEntity.ok(savingsGoal);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SavingsGoal> getSavingsGoal(@PathVariable Long accountId, @PathVariable Long id) {
-        SavingsGoal savingsGoal = savingsGoalService.getSavingsGoal(accountId, id);
+    public ResponseEntity<SavingsGoal> getSavingsGoal(@PathVariable String accountNumber, @PathVariable Long id) {
+        SavingsGoal savingsGoal = savingsGoalService.getSavingsGoal(accountNumber, id);
         return ResponseEntity.ok(savingsGoal);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<SavingsGoal> deleteSavingsGoal(
-            @PathVariable Long accountId,
+            @PathVariable String accountNumber,
             @PathVariable Long id) {
-        savingsGoalService.deleteSavingsGoal(accountId, id);
+        savingsGoalService.deleteSavingsGoal(accountNumber, id);
         return ResponseEntity.ok().build();
     }
 }

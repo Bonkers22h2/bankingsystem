@@ -27,11 +27,10 @@ public class SavingsGoalService {
     public SavingsGoalService(SavingsGoalRepository savingsGoalRepository, AccountRepository accountRepository) {
         this.savingsGoalRepository = savingsGoalRepository;
         this.accountRepository = accountRepository;
-
     }
 
-    public SavingsGoal createSavingsGoal(Long accountId, CreateSavingsGoalRequest request) {
-        Account account = accountRepository.findById(accountId)
+    public SavingsGoal createSavingsGoal(String accountNumber, CreateSavingsGoalRequest request) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         SavingsGoal savingsGoal = new SavingsGoal();
@@ -43,8 +42,8 @@ public class SavingsGoalService {
     }
 
     @Transactional
-    public SavingsGoal contribute(Long accountId, Long id, ContributeSavingsGoalRequest request) {
-        Account account = accountRepository.findById(accountId)
+    public SavingsGoal contribute(String accountNumber, Long id, ContributeSavingsGoalRequest request) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         SavingsGoal savingsGoal = savingsGoalRepository.findById(id)
@@ -54,12 +53,12 @@ public class SavingsGoalService {
             throw new ClosedAccountException("This account is close");
         }
 
-        if (!savingsGoal.getAccount().getId().equals(accountId)) {
+        if (!savingsGoal.getAccount().getId().equals(account.getId())) {
             throw new SavingsGoalNotFoundException("This goal does not belong to the specified account");
         }
 
         if (account.getBalance().compareTo(request.getAmount()) < 0) {
-            throw new InsufficientFundsException("Insufficient funds in account: " + accountId);
+            throw new InsufficientFundsException("Insufficient funds in account: " + accountNumber);
         }
 
         BigDecimal newCurrentAmount = savingsGoal.getCurrentAmount().add(request.getAmount());
@@ -69,36 +68,38 @@ public class SavingsGoalService {
         }
 
         account.setBalance(account.getBalance().subtract(request.getAmount()));
-        savingsGoal.setCurrentAmount(savingsGoal.getCurrentAmount().add(request.getAmount()));
+        savingsGoal.setCurrentAmount(newCurrentAmount);
 
         accountRepository.save(account);
         return savingsGoalRepository.save(savingsGoal);
     }
 
-    public SavingsGoal getSavingsGoal(Long accountId, Long id) {
-
-        Account account = accountRepository.findById(accountId)
+    public SavingsGoal getSavingsGoal(String accountNumber, Long id) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("No Account found"));
+
         SavingsGoal savingsGoal = savingsGoalRepository.findById(id)
-            .orElseThrow(() -> new SavingsGoalNotFoundException("Savings Goal not found"));
+                .orElseThrow(() -> new SavingsGoalNotFoundException("Savings Goal not found"));
 
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
 
-        if(!savingsGoal.getAccount().getId().equals(accountId)){
+        if (!savingsGoal.getAccount().getId().equals(account.getId())) {
             throw new SavingsGoalNotFoundException("This Savings goal does not belong to the specified account");
         }
 
-        return savingsGoalRepository.findById(id)
-                .orElseThrow(() -> new SavingsGoalNotFoundException("Savings Goal not found!"));
+        return savingsGoal;
     }
 
-    public void deleteSavingsGoal(Long accountId, Long id) {
+    public void deleteSavingsGoal(String accountNumber, Long id) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("No Account found"));
+
         SavingsGoal savingsGoal = savingsGoalRepository.findById(id)
-            .orElseThrow(() -> new SavingsGoalNotFoundException("Savings Goal not found"));
-        
-        if(!savingsGoal.getAccount().getId().equals(accountId)){
+                .orElseThrow(() -> new SavingsGoalNotFoundException("Savings Goal not found"));
+
+        if (!savingsGoal.getAccount().getId().equals(account.getId())) {
             throw new SavingsGoalNotFoundException("This Savings Goal does not belong to the specified account");
         }
 
