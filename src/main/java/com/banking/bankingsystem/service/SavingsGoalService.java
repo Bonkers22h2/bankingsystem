@@ -1,6 +1,7 @@
 package com.banking.bankingsystem.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,13 @@ public class SavingsGoalService {
         savingsGoal.setAccount(account);
         savingsGoal.setCurrentAmount(new BigDecimal(0));
         return savingsGoalRepository.save(savingsGoal);
+    }
+
+    public List<SavingsGoal> getAllSavingsGoal(String accountNumber) {
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(() -> new AccountNotFoundException("Account not Found!"));
+                
+        return savingsGoalRepository.findByAccountId(account.getId());
     }
 
     @Transactional

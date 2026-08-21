@@ -12,6 +12,8 @@ import com.banking.bankingsystem.service.SavingsGoalService;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +32,12 @@ public class SavingsGoalController {
 
     public SavingsGoalController(SavingsGoalService savingsGoalService) {
         this.savingsGoalService = savingsGoalService;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<SavingsGoal>> getAllSavingsGoal(@PathVariable String accountNumber){
+        List<SavingsGoal> savingsGoal = savingsGoalService.getAllSavingsGoal(accountNumber);
+        return ResponseEntity.ok(savingsGoal);
     }
 
     @PostMapping
