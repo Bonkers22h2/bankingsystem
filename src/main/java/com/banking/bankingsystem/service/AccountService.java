@@ -147,6 +147,13 @@ public class AccountService {
         return accountRepository.save(account);
     }
 
+    public void deleteAccount(Long id) {
+        Account account = accountRepository.findById(id)
+            .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
+
+        accountRepository.delete(account);
+    }
+
     public void closeAccount(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found!"));

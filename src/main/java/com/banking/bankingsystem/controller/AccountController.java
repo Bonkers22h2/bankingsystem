@@ -90,6 +90,12 @@ public class AccountController {
         Account account = accountService.updateAccount(accountNumber, request);
         return ResponseEntity.ok(account);
     }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable Long id) {
+        accountService.deleteAccount(id);
+        return ResponseEntity.ok().build();
+    }
 
     @DeleteMapping("/{accountNumber}/close")
     public ResponseEntity<Void> closeAccount(@PathVariable String accountNumber) {
