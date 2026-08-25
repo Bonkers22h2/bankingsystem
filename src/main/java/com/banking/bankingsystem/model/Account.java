@@ -12,7 +12,6 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    
     private String accountNumber;
 
     private String ownerName;
@@ -26,6 +25,21 @@ public class Account {
 
     private boolean active = true;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User owner;
+
+    public boolean getActive() {
+        return this.active;
+    }
+
+    public User getOwner() {
+        return this.owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
 
     public boolean isActive() {
         return this.active;

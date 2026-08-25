@@ -7,11 +7,14 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.banking.bankingsystem.model.User;
 
 import com.banking.bankingsystem.dto.CreateAccountRequest;
 import com.banking.bankingsystem.dto.UpdateAccountRequest;
+import com.banking.bankingsystem.exception.AccountNotFoundException;
 import com.banking.bankingsystem.exception.ClosedAccountException;
 import com.banking.bankingsystem.exception.InsufficientFundsException;
 import com.banking.bankingsystem.exception.InvalidAmountException;
@@ -22,20 +25,24 @@ import com.banking.bankingsystem.model.TransactionStatus;
 import com.banking.bankingsystem.model.TransactionType;
 import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
-import com.banking.bankingsystem.exception.AccountNotFoundException;
+import com.banking.bankingsystem.repository.UserRepository;
+
 
 @Service
 public class AccountService {
 
-    private final AccountRepository accountRepository;
-    private final TransactionRepository transactionRepository;
-
     private static final BigDecimal MIN_WITHDRAWAL = new BigDecimal("100");
     private static final BigDecimal MAX_WITHDRAWAL = new BigDecimal("50000");
 
-    public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository) {
+    private final AccountRepository accountRepository;
+    private final TransactionRepository transactionRepository;
+    private final UserRepository userRepository; // ← add this field
+
+    public AccountService(AccountRepository accountRepository, TransactionRepository transactionRepository,
+            UserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.transactionRepository = transactionRepository;
+        this.userRepository = userRepository; // ← add this line
     }
 
     @Transactional
@@ -130,12 +137,17 @@ public class AccountService {
     }
 
     public Account createAccount(CreateAccountRequest request) {
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User owner = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         Account account = new Account();
         account.setOwnerName(request.getOwnerName());
         account.setAccountType(AccountType.valueOf(request.getAccountType()));
         account.setBalance(request.getInitialBalance());
         account.setCreatedAt(LocalDateTime.now());
         account.setAccountNumber(generateUniqueAccountNumber());
+        account.setOwner(owner);
         return accountRepository.save(account);
     }
 
@@ -149,7 +161,7 @@ public class AccountService {
 
     public void deleteAccount(Long id) {
         Account account = accountRepository.findById(id)
-            .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
+                .orElseThrow(() -> new AccountNotFoundException("Account not found!"));
 
         accountRepository.delete(account);
     }
@@ -173,6 +185,14 @@ public class AccountService {
     public Account getAccount(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new AccountNotFoundException("Account not found"));
+
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName(); // ← THIS LINE, right
+                                                                                                   // here
+
+        if (!account.getOwner().getUsername().equals(currentUsername)) {
+            throw new RuntimeException("You do not own this account");
+        }
+
         if (!account.isActive()) {
             throw new ClosedAccountException("This account is close");
         }
