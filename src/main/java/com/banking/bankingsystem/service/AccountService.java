@@ -27,7 +27,6 @@ import com.banking.bankingsystem.repository.AccountRepository;
 import com.banking.bankingsystem.repository.TransactionRepository;
 import com.banking.bankingsystem.repository.UserRepository;
 
-
 @Service
 public class AccountService {
 
@@ -200,7 +199,11 @@ public class AccountService {
     }
 
     public List<Account> getAllAccounts() {
-        return accountRepository.findAll();
+        String currentUsername = SecurityContextHolder.getContext().getAuthentication().getName();
+        User currentUser = userRepository.findByUsername(currentUsername)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return accountRepository.findByOwner(currentUser);
     }
 
     private String generateUniqueAccountNumber() {
